@@ -1,5 +1,5 @@
 ultralytics
+opencv-python-headless
 openvino>=2024.0.0
-opencv-python
 streamlit
 streamlit-webrtc
