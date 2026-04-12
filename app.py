@@ -5,7 +5,7 @@ import cv2
 
 # 1. Load your optimized model
 # We do this outside the class so it only loads once
-model = YOLO('yolov8n.pt')
+model = YOLO('yolov8n_openvino_model/')
 
 class VideoTransformer(VideoTransformerBase):
     def transform(self, frame):
