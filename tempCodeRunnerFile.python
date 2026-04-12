@@ -1,0 +1,10 @@
+from ultralytics import YOLO
+
+# 1. Load standard model
+model = YOLO('yolov8n.pt') 
+
+# 2. Export to OpenVINO format for Intel-specific performance
+# This step is critical for smooth live tracking on your i7
+model.export(format='openvino', half=True) 
+
+print("Step 1 Complete: Optimized model created in 'yolov8n_openvino_model/' folder.")
