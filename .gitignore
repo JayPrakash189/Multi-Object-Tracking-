@@ -1,0 +1,15 @@
+# AI Models (Ignore large weights and optimized folders)
+*.pt
+yolov8n_openvino_model/
+
+# Python temporary files
+__pycache__/
+*.py[cod]
+
+# Virtual Environments (if you use them)
+venv/
+.env/
+
+# OS-specific files
+.DS_Store
+Thumbs.db
