@@ -23,8 +23,8 @@ class VideoTransformer(VideoTransformerBase):
         return img
 
 # --- Streamlit UI ---
-st.title("M.Tech Minor Project: AI MOT")
-st.subheader("Hardware Optimized with Intel OpenVINO")
+st.title("Multi-Object Tracking with YOLOv8 and Intel OpenVINO")
+# st.subheader("Hardware Optimized with Intel OpenVINO")
 
 st.write("Click 'Start' below to begin live tracking via your webcam.")
 
