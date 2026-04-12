@@ -1,35 +1,35 @@
 import streamlit as st
-from streamlit_webrtc import webrtc_streamer, RTCConfiguration, WebRtcMode
-import av
+import cv2
 from ultralytics import YOLO
 
-# 1. Load the basic model (Safe for Cloud)
+# 1. Load standard model
 model = YOLO('yolov8n.pt') 
 
-# 2. WebRTC configuration for STABLE connection
-RTC_CONFIGURATION = RTCConfiguration(
-    {"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]}
-)
+st.title("M.Tech Minor Project: Live MOT")
+st.write("Click 'Start' to activate the camera. If it freezes, try reducing your browser zoom.")
 
-def video_frame_callback(frame):
-    img = frame.to_ndarray(format="bgr24")
+# 2. Setup placeholders to prevent UI lag
+run = st.checkbox('Start Camera')
+FRAME_WINDOW = st.image([])
 
-    # 3. Optimization: Run tracking only on high-confidence detections
-    # Reduce 'imgsz' to 320 to make it 4x faster on the cloud
-    results = model.track(img, persist=True, imgsz=320, conf=0.5, verbose=False)
+# 3. Use standard OpenCV capture (More stable for beginners)
+camera = cv2.VideoCapture(0)
 
+while run:
+    _, frame = camera.read()
+    if frame is None:
+        break
+    
+    # 4. Convert BGR to RGB for Streamlit
+    frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+    
+    # 5. Fast Tracking: Small image size for Cloud speed
+    results = model.track(frame, persist=True, imgsz=320, verbose=False)
+    
+    # 6. Plot and Display
     annotated_frame = results[0].plot()
+    FRAME_WINDOW.image(annotated_frame)
 
-    return av.VideoFrame.from_ndarray(annotated_frame, format="bgr24")
-
-st.title("Live MOT Deployment")
-
-# 4. Use 'SENDONLY' mode to reduce server load
-webrtc_streamer(
-    key="mot",
-    mode=WebRtcMode.SENDRECV,
-    rtc_configuration=RTC_CONFIGURATION,
-    video_frame_callback=video_frame_callback,
-    media_stream_constraints={"video": True, "audio": False}, # No audio = Faster
-    async_processing=True, # Critical: This prevents the UI from freezing
-)
+else:
+    st.write('Camera Stopped')
+    camera.release()
