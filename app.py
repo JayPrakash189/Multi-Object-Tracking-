@@ -1,31 +1,35 @@
 import streamlit as st
-from streamlit_webrtc import webrtc_streamer, VideoTransformerBase
+from streamlit_webrtc import webrtc_streamer, RTCConfiguration, WebRtcMode
+import av
 from ultralytics import YOLO
-import cv2
 
-# 1. Load your optimized model
-# We do this outside the class so it only loads once
-model = YOLO('yolov8n_openvino_model/')
+# 1. Load the basic model (Safe for Cloud)
+model = YOLO('yolov8n.pt') 
 
-class VideoTransformer(VideoTransformerBase):
-    def transform(self, frame):
-        img = frame.to_ndarray(format="bgr24")
+# 2. WebRTC configuration for STABLE connection
+RTC_CONFIGURATION = RTCConfiguration(
+    {"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]}
+)
 
-        # 2. Run MOT Tracking
-        # We use a lower conf for web responsiveness
-        results = model.track(img, persist=True, tracker="botsort.yaml", verbose=False)
+def video_frame_callback(frame):
+    img = frame.to_ndarray(format="bgr24")
 
-        # 3. Annotate the frame
-        if results[0].boxes.id is not None:
-            annotated_frame = results[0].plot()
-            return annotated_frame
-        
-        return img
+    # 3. Optimization: Run tracking only on high-confidence detections
+    # Reduce 'imgsz' to 320 to make it 4x faster on the cloud
+    results = model.track(img, persist=True, imgsz=320, conf=0.5, verbose=False)
 
-# --- Streamlit UI ---
-st.title("Multi-Object Tracking with YOLOv8 and Intel OpenVINO")
-# st.subheader("Hardware Optimized with Intel OpenVINO")
+    annotated_frame = results[0].plot()
 
-st.write("Click 'Start' below to begin live tracking via your webcam.")
+    return av.VideoFrame.from_ndarray(annotated_frame, format="bgr24")
 
-webrtc_streamer(key="example", video_transformer_factory=VideoTransformer)
+st.title("Live MOT Deployment")
+
+# 4. Use 'SENDONLY' mode to reduce server load
+webrtc_streamer(
+    key="mot",
+    mode=WebRtcMode.SENDRECV,
+    rtc_configuration=RTC_CONFIGURATION,
+    video_frame_callback=video_frame_callback,
+    media_stream_constraints={"video": True, "audio": False}, # No audio = Faster
+    async_processing=True, # Critical: This prevents the UI from freezing
+)
