@@ -49,19 +49,4 @@ packages.txt: Linux system dependencies for cloud deployment.
  Performance Metrics-
 The system tracks unique object IDs and monitors live FPS to demonstrate the efficiency of hardware-specific optimization.
 
-Final Pro-Tip for your Demo:
-On GitHub, your file list should now look like this:
 
-app.py (Must be in the main folder to avoid "Main module does not exist")
-
-live_tracking_mot.py
-
-optimize_model.py
-
-requirements.txt
-
-packages.txt
-
-yolov8n.pt
-
-.gitignore 
